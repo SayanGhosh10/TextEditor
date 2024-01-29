@@ -10,8 +10,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "gradlew": "^0.0.1-security",
     "react": "18.2.0",
-    "react-native": "0.73.2"
+    "react-native": "0.73.2",
+    "react-native-dynamic-fonts": "^0.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

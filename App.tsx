@@ -1,118 +1,132 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, Button } from 'react-native';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const App = () => {
+  const [fontSize, setFontSize] = useState(16);
+  const [fontColor, setFontColor] = useState('black');
+  const [fontFamily, setFontFamily] = useState('Roboto');
+  const [newText, setNewText] = useState('New Text')
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  const [history, setHistory] = useState([
+    { fontSize, fontColor, fontFamily, newText }
+  ]);
+  const historyIndex = useRef(0);
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  const updateHistory = () => {
+    const currentState = { fontSize, fontColor, fontFamily, newText };
+    setHistory([...history.slice(0, historyIndex.current + 1), currentState]);
+    historyIndex.current = historyIndex.current + 1;
+  };
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+  const undo = () => {
+    if (historyIndex.current > 0) {
+      historyIndex.current = historyIndex.current - 1;
+      const prevState = history[historyIndex.current];
+      setFontSize(prevState.fontSize);
+      setFontColor(prevState.fontColor);
+      setFontFamily(prevState.fontFamily);
+      setNewText(prevState.newText);
+    }
+  };
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const redo = () => {
+    if (historyIndex.current < history.length - 1) {
+      historyIndex.current = historyIndex.current + 1;
+      const nextState = history[historyIndex.current];
+      setFontSize(nextState.fontSize);
+      setFontColor(nextState.fontColor);
+      setFontFamily(nextState.fontFamily);
+      setNewText(nextState.newText);
+    }
+  };
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const reset = () => {
+    const initialState = { fontSize: 16, fontColor: 'black', fontFamily: 'Roboto', newText: 'New Text' };
+    setFontSize(initialState.fontSize);
+    setFontColor(initialState.fontColor);
+    setFontFamily(initialState.fontFamily);
+    setNewText(initialState.newText);
+    setHistory([initialState]);
+    historyIndex.current = 0;
+  };
+
+  const increaseFontSize = () => {
+    setFontSize(fontSize + 2);
+    updateHistory();
+  };
+
+  const decreaseFontSize = () => {
+    setFontSize(fontSize - 2);
+    updateHistory();
+  };
+
+  const changeFontColor = (newColor: string) => {
+    setFontColor(newColor);
+    updateHistory();
+  };
+
+  const changeFontStyle = (newStyle: string) => {
+    setFontFamily(newStyle);
+    updateHistory();
+  };
+
+  
+  const changeText = (newTextValue : string) => {
+    setNewText(newTextValue);
+    updateHistory();
+  };
+
+  const textStyles: any = {
+    fontSize,
+    color: fontColor,
+    fontFamily,
+    fontWeight: 'bold',
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={textStyles}>{newText}</Text>
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+      <TextInput
+        style={{ height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, padding: 5 }}
+        placeholder="Enter Font Color (e.g. red, green)"
+        onChangeText={changeFontColor}
+      />
+
+      <TextInput
+        style={{ height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, padding: 5 }}
+        placeholder="Enter Font Family (e.g. roboto, arial)"
+        onChangeText={changeFontStyle}
+      />
+
+      <TextInput
+        style={{ height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, padding: 5 }}
+        placeholder="Enter New Text"
+        onChangeText={changeText}
+      />
+
+
+      <View style={{ margin: 10 }}>
+        <Button title="Increase Font Size" onPress={increaseFontSize} />
+      </View>
+
+      <View style={{ margin: 10 }}>
+        <Button title="Decrease Font Size" onPress={decreaseFontSize} />
+      </View>
+
+      <View style={{ flexDirection: 'row', margin: 10 }}>
+        <View style={{ marginRight: 10 }}>
+          <Button title="Undo" onPress={undo} />
+        </View>
+        <View style={{ marginLeft: 10, marginRight: 10 }}>
+          <Button title="Redo" onPress={redo} />
+        </View>
+        <View style={{ marginLeft: 10 }}>
+          <Button title="Reset" onPress={reset} />
+        </View>
+      </View>
+    </View>
+  );
+};
 
 export default App;
